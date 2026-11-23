@@ -56,3 +56,20 @@ DELETE /tasks/:id eliminar tarea
 
 La API concreta se elegirá después. Estas rutas son requisitos, no
 direcciones de un servidor ya conectado.
+
+## API de tareas
+
+* **URL exacta:** `https://jsonplaceholder.typicode.com/todos`
+* **Parámetro de consulta (`userId`):** `6` (valor elegido dentro de los usuarios válidos `1`–`10` de la API para obtener sus 20 tareas asociadas).
+* **Campos que llegan desde la API:** `id` (entero), `title` (texto), `completed` (booleano) y `userId` (entero).
+* **Valores completados por defecto en TaskFlow:** Como la API externa no provee descripción ni prioridad, `Task.fromJson` asigna `'Sin descripción (API)'` a `description` y `'Sin prioridad (API)'` a `priority`, mapeando el campo remoto `completed` hacia `isCompleted`.
+* **Persistencia actual:** La lectura de tareas se realiza desde el servidor remoto mediante Dio, mientras que marcar o desmarcar una tarea como completada aún opera únicamente en la memoria local de la aplicación.
+
+## Estados de la interfaz (Carga, Éxito, Vacío y Error)
+
+La pantalla `TaskListScreen` observa los cambios de `TasksViewModel` mediante `context.watch<TasksViewModel>()` y dispara la recarga de datos con `context.read<TasksViewModel>().loadTasks()`. Así se provocó y verificó cada estado:
+
+* **Carga (`isLoading`):** Se observa al abrir la aplicación por primera vez o al pulsar el botón de actualizar/reintentar mientras se resuelve la petición HTTP. Muestra un `CircularProgressIndicator` acompañado del mensaje *"Sincronizando tus tareas desde el servidor..."*.
+* **Éxito (Lista remota):** Con conexión a internet activa y `userId = 6` en `TaskApiService`, el servidor responde `HTTP 200` y se renderiza la lista interactiva con las 20 tareas del usuario, permitiendo entrar al detalle de cada una y volver conservando título e ID.
+* **Vacío (`isEmpty`):** Se provocó cambiando temporalmente la constante `userId` a `9999` en `TaskApiService`. El servidor devuelve `HTTP 200` con una lista vacía `[]`, lo que activa la vista con el mensaje *"Todavía no tienes tareas asignadas en este perfil."* y el botón **Actualizar**.
+* **Error y Reintento (`errorMessage`):** Se provocó activando el **Modo avión** (desactivando Wi-Fi y datos móviles) en el emulador Android y pulsando el ícono de **Actualizar** en la barra superior. Al fallar la petición en Dio, aparece el mensaje de error junto con el botón **Reintentar**; al reactivar internet y pulsar **Reintentar**, la lista vuelve a cargarse sin necesidad de reiniciar TaskFlow.
