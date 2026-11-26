@@ -73,3 +73,12 @@ La pantalla `TaskListScreen` observa los cambios de `TasksViewModel` mediante `c
 * **Éxito (Lista remota):** Con conexión a internet activa y `userId = 6` en `TaskApiService`, el servidor responde `HTTP 200` y se renderiza la lista interactiva con las 20 tareas del usuario, permitiendo entrar al detalle de cada una y volver conservando título e ID.
 * **Vacío (`isEmpty`):** Se provocó cambiando temporalmente la constante `userId` a `9999` en `TaskApiService`. El servidor devuelve `HTTP 200` con una lista vacía `[]`, lo que activa la vista con el mensaje *"Todavía no tienes tareas asignadas en este perfil."* y el botón **Actualizar**.
 * **Error y Reintento (`errorMessage`):** Se provocó activando el **Modo avión** (desactivando Wi-Fi y datos móviles) en el emulador Android y pulsando el ícono de **Actualizar** en la barra superior. Al fallar la petición en Dio, aparece el mensaje de error junto con el botón **Reintentar**; al reactivar internet y pulsar **Reintentar**, la lista vuelve a cargarse sin necesidad de reiniciar TaskFlow.
+
+## Formulario de nueva tarea y validación
+
+Se incorporó la ruta `/new` en `GoRouter` junto con la pantalla `TaskFormScreen`, accesible desde el `FloatingActionButton.extended` (**Nueva tarea**) en `TaskListScreen`:
+
+* **Campos y controladores:** Utiliza un `Form` asociado a un `GlobalKey<FormState>` y controladores `TextEditingController` para título y descripción (liberados correctamente en `dispose()`), además de un selector `DropdownButtonFormField` para la prioridad (`Alta`, `Media`, `Baja`).
+* **Validaciones personalizadas:** Exige que el título no esté vacío y tenga al menos 4 caracteres, y que la descripción contenga texto antes de permitir el envío.
+* **Fecha límite opcional (`showDatePicker`):** Permite seleccionar o quitar una fecha límite sin bloquear el guardado cuando se deja sin definir.
+* **Retorno del borrador:** Al validar correctamente, `TaskFormScreen` devuelve una instancia de `TaskDraft` mediante `context.pop(draft)` y `TaskListScreen` confirma la recepción mostrando un `SnackBar` con el título, prioridad y fecha elegida (sin persistir aún en la lista remota).
